@@ -1,6 +1,6 @@
 name: Sürüm yayınla
 
-# "v1.2.3" biçiminde bir etiket gönderildiğinde Windows (.exe) ve macOS (.dmg) kurulum
+# "v1.2.3" biçiminde bir etiket gönderildiğinde Windows (.exe), macOS (.dmg) ve Linux (.deb, AppImage) kurulum
 # dosyalarını derler ve public Muhammed61/termify-releases reposunun Releases bölümüne yükler.
 # Kod gizli kalır; kurulu uygulamalar güncellemeleri o repodan alır.
 # Gerekli secret: RELEASES_TOKEN (termify-releases için Contents: Read and write).
@@ -42,6 +42,9 @@ jobs:
           - os: macos-latest
             script: dist:mac
             name: macos
+          - os: ubuntu-latest
+            script: dist:linux
+            name: linux
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -63,12 +66,14 @@ jobs:
             dist/*.exe
             dist/*.dmg
             dist/*.zip
+            dist/*.deb
+            dist/*.AppImage
             dist/*.blockmap
             dist/latest*.yml
 
   # Dosyalar GitHub CLI ile tek seferde yüklenir ve her biri kontrol edildikten sonra
-  # sürüm yayına alınır. İki derlemeden biri bile başarısız olursa hiçbir şey yayınlanmaz;
-  # latest.yml / latest-mac.yml eksik kalırsa kurulu uygulamalar yeni sürümü göremez.
+  # sürüm yayına alınır. Derlemelerden biri bile başarısız olursa hiçbir şey yayınlanmaz;
+  # latest*.yml dosyaları eksik kalırsa kurulu uygulamalar yeni sürümü göremez.
   release:
     needs: build
     if: startsWith(github.ref, 'refs/tags/v')
@@ -87,7 +92,9 @@ jobs:
           tag="$GITHUB_REF_NAME"
           v="${tag#v}"
           required=("Termify-Setup-$v.exe" "Termify-Setup-$v.exe.blockmap" "latest.yml"
-                    "Termify-$v-arm64.dmg" "Termify-$v-x64.dmg" "Termify-$v-arm64.zip" "Termify-$v-x64.zip" "latest-mac.yml")
+                    "Termify-$v-arm64.dmg" "Termify-$v-x64.dmg" "Termify-$v-arm64.zip" "Termify-$v-x64.zip" "latest-mac.yml"
+                    "Termify-$v-amd64.deb" "Termify-$v-arm64.deb" "Termify-$v-x86_64.AppImage" "Termify-$v-arm64.AppImage"
+                    "latest-linux.yml" "latest-linux-arm64.yml")
           for f in "${required[@]}"; do [ -f "dist/$f" ] || { echo "Derlemede eksik dosya: $f"; ls dist; exit 1; }; done
           files=(dist/*)
 
@@ -99,6 +106,8 @@ jobs:
           **Windows:** Termify-Setup-$v.exe dosyasını indirip çalıştırın. Kurulum dosyası imzasız olduğu için SmartScreen uyarı verebilir: Ek bilgi → Yine de çalıştır.
 
           **macOS:** Apple Silicon (M1/M2/M3/M4) için Termify-$v-arm64.dmg, Intel Mac için Termify-$v-x64.dmg dosyasını indirin, açın ve Termify'yi Uygulamalar klasörüne sürükleyin. Uygulama Apple sertifikasıyla imzalı olmadığı için ilk açılışta uyarı çıkar: Sistem Ayarları → Gizlilik ve Güvenlik → Yine de Aç. \"Hasarlı\" uyarısı çıkarsa Terminal'de bir kez şunu çalıştırın: xattr -cr /Applications/Termify.app
+
+          **Linux (Kali, Debian, Ubuntu):** Termify-$v-amd64.deb dosyasını indirip şunu çalıştırın: sudo apt install ./Termify-$v-amd64.deb (ARM cihazlar için arm64.deb). Kurulumsuz kullanmak için .AppImage dosyası da var: chmod +x ile çalıştırılabilir yapıp açın (libfuse2 gerekir).
 
           Kurulu uygulamalar yeni sürümü kendiliğinden bulur."
           fi

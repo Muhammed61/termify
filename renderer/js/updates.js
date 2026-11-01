@@ -59,7 +59,7 @@ function renderBanner() {
       icon('download', 17),
       h('span', { class: 'grow' }, h('b', null, `Yeni sürüm ${s.version} hazır.`), update.manual
         ? " Yeni kurulum dosyasını indirip Termify'yi Uygulamalar klasörüne sürükleyin. Verileriniz korunur."
-        : ' Güncelleme yaklaşık bir dakika sürer; Termify kapanıp yeniden açılır. Verileriniz korunur.'),
+        : ' Güncelleme yaklaşık bir dakika sürer; Termify kapanıp yeniden açılır.' + (window.api.platform === 'linux' ? ' Kurulum için parolanız istenebilir.' : '') + ' Verileriniz korunur.'),
       h('button', { class: 'btn sm light', onclick: startUpdate }, update.manual ? 'İndir' : 'Şimdi güncelle'),
       h('button', { class: 'btn sm ghost-light', title: 'Sonra hatırlat', onclick: () => { dismissed = s.version; renderBanner(); } }, 'Sonra'));
   } else if (s.status === 'downloading') {

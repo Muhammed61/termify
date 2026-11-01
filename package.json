@@ -1,13 +1,14 @@
 {
   "name": "termify",
   "productName": "Termify",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Termify: Türkçe, Termius benzeri SSH istemcisi (terminal, SFTP, port yönlendirme, anahtar yönetimi)",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
     "dist": "electron-builder --win --publish never",
-    "dist:mac": "electron-builder --mac --publish never"
+    "dist:mac": "electron-builder --mac --publish never",
+    "dist:linux": "electron-builder --linux --publish never"
   },
   "build": {
     "appId": "com.muhammed61.termify",
@@ -79,6 +80,37 @@
       "title": "Termify ${version}",
       "artifactName": "Termify-${version}-${arch}.${ext}"
     },
+    "linux": {
+      "target": [
+        {
+          "target": "deb",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        },
+        {
+          "target": "AppImage",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ],
+      "icon": "build/icon.png",
+      "category": "Development",
+      "synopsis": "Türkçe SSH istemcisi",
+      "maintainer": "Muhammed61 <muhammed61@users.noreply.github.com>",
+      "executableName": "termify",
+      "artifactName": "Termify-${version}-${arch}.${ext}",
+      "desktop": {
+        "entry": {
+          "Name": "Termify",
+          "Comment": "Türkçe SSH istemcisi",
+          "Keywords": "ssh;sftp;terminal;"
+        }
+      }
+    },
     "publish": {
       "provider": "github",
       "owner": "Muhammed61",
@@ -100,7 +132,7 @@
     "electron-builder": "^26.18.0"
   },
   "author": "Muhammed61",
-  "homepage": "https://github.com/Muhammed61/termify",
+  "homepage": "https://github.com/Muhammed61/termify-releases",
   "repository": {
     "type": "git",
     "url": "https://github.com/Muhammed61/termify.git"

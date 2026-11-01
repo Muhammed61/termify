@@ -21,6 +21,8 @@ function friendlyError(e) {
   if (/ENOTFOUND|ETIMEDOUT|ECONNREFUSED|ECONNRESET|EAI_AGAIN|net::ERR_/i.test(msg)) return 'İnternet bağlantısı yok; güncellemeler denetlenemedi.';
   if (/latest\.yml|404/i.test(msg)) return 'Sunucuda güncelleme bilgisi bulunamadı. Yeni sürüm yayınlandığında tekrar deneyin.';
   if (/sha512|checksum/i.test(msg)) return 'İndirilen dosya doğrulanamadı. Lütfen tekrar deneyin.';
+  // Linux .deb: kurulum pkexec/sudo ile yönetici izni ister; iptal edilirse buraya düşer
+  if (/pkexec|sudo|dpkg|apt|exit code|status 12[67]/i.test(msg)) return 'Güncelleme kurulamadı (yönetici izni verilmedi). Tekrar deneyin ya da yeni .deb dosyasını indirme sayfasından kurun.';
   return `Güncelleme sırasında bir sorun oluştu: ${msg.split('\n')[0].slice(0, 140)}`;
 }
 
