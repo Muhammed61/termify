@@ -1,16 +1,18 @@
-# v* etiketi gönderildiğinde Windows kurulum dosyasını derler ve GitHub Release oluşturur.
-name: Release
+name: Sürüm yayınla
 
+# "v1.2.3" biçiminde bir etiket gönderildiğinde Windows kurulum dosyasını derler ve
+# public Muhammed61/termify-releases reposunun Releases bölümüne yükler.
+# Kod gizli kalır; kurulu uygulamalar güncellemeleri o repodan alır.
+# Gerekli secret: RELEASES_TOKEN (termify-releases için Contents: Read and write).
 on:
   push:
     tags: ['v*']
-  workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  build-windows:
+  release:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -20,29 +22,46 @@ jobs:
           node-version: 22
           cache: npm
 
+      - name: Etiket ve package.json sürümü aynı mı?
+        shell: bash
+        run: |
+          v=$(node -p "require('./package.json').version")
+          [ "v$v" = "$GITHUB_REF_NAME" ] || { echo "Etiket $GITHUB_REF_NAME ile package.json sürümü $v uyuşmuyor"; exit 1; }
+
+      - name: RELEASES_TOKEN tanımlı mı?
+        shell: bash
+        env:
+          T: ${{ secrets.RELEASES_TOKEN }}
+        run: '[ -n "$T" ] || { echo "RELEASES_TOKEN secret eksik (Settings > Secrets and variables > Actions)"; exit 1; }'
+
       - run: npm ci
+      - name: Kurulum dosyasını derle
+        run: npm run dist
 
-      - run: npm run dist
+      # Dosyalar GitHub CLI ile tek seferde yüklenir ve her biri kontrol edildikten
+      # sonra sürüm yayına alınır. latest.yml eksik kalırsa kurulu uygulamalar
+      # yeni sürümü göremez; bu durumda iş başarısız olur ve sürüm taslak kalır.
+      - name: Sürüm reposuna yükle ve yayına al
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.RELEASES_TOKEN }}
+        run: |
+          repo=Muhammed61/termify-releases
+          tag="$GITHUB_REF_NAME"
+          v="${tag#v}"
+          files=("dist/Termify-Setup-$v.exe" "dist/Termify-Setup-$v.exe.blockmap" "dist/latest.yml")
+          for f in "${files[@]}"; do [ -f "$f" ] || { echo "Derlemede eksik dosya: $f"; ls dist; exit 1; }; done
 
-      - uses: softprops/action-gh-release@v2
-        if: startsWith(github.ref, 'refs/tags/')
-        with:
-          name: Termify ${{ github.ref_name }}
-          files: dist/Termify-Setup-*.exe
-          body: |
-            ## Termify ${{ github.ref_name }}
+          if gh release view "$tag" --repo "$repo" >/dev/null 2>&1; then
+            gh release upload "$tag" "${files[@]}" --repo "$repo" --clobber
+          else
+            gh release create "$tag" "${files[@]}" --repo "$repo" --latest --title "Termify $v" \
+              --notes "Termify $v. İlk kurulum için **Termify-Setup-$v.exe** dosyasını indirip çalıştırın; kurulu uygulamalar bu sürümü kendiliğinden bulur ve güncellenir. Kurulum dosyası imzasız olduğu için Windows SmartScreen uyarı verebilir: Ek bilgi → Yine de çalıştır."
+          fi
 
-            Türkçe arayüzlü masaüstü SSH istemcisi.
-
-            ### Kurulum
-            Aşağıdaki **Termify-Setup-*.exe** dosyasını indirip çalıştırın.
-            Kurulum dosyası imzasız olduğu için Windows SmartScreen uyarı verebilir: **Ek bilgi → Yine de çalıştır**.
-
-            ### Özellikler
-            - Şifreli kasa (AES-256-GCM), otomatik kilit
-            - Hostlar: gruplar, etiketler, hızlı bağlan, atlama sunucusu
-            - Terminal: sekmeler, bölünmüş ekran, yayın modu, arama, 8 tema
-            - SFTP: çift panel, sürükle-bırak, uzak dosya düzenleme
-            - SSH anahtarı üretme/içe aktarma, tek tıkla sunucuya yükleme
-            - Port yönlendirme: yerel, uzak, SOCKS5
-            - Snippet'ler, bilinen hostlar, şifreli yedekleme
+          assets=$(gh release view "$tag" --repo "$repo" --json assets --jq '.assets[].name')
+          echo "Yüklenen dosyalar:"; echo "$assets"
+          for f in "${files[@]}"; do
+            echo "$assets" | grep -qx "$(basename "$f")" || { echo "Sürümde eksik dosya: $(basename "$f")"; exit 1; }
+          done
+          gh release edit "$tag" --repo "$repo" --draft=false --latest

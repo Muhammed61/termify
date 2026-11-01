@@ -10,14 +10,14 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/Muhammed61/termify/releases/latest"><b>⬇ Windows için indir (Setup .exe)</b></a>
+  <a href="https://github.com/Muhammed61/termify-releases/releases/latest"><b>⬇ Windows için indir (Setup .exe)</b></a>
 </p>
 
 ![Hostlar](docs/hostlar.png)
 
 ## Kurulum
 
-[Releases](https://github.com/Muhammed61/termify/releases/latest) sayfasından `Termify-Setup-x.y.z.exe` dosyasını indirip çalıştırın. Kurulum dosyası imzasız olduğu için Windows SmartScreen uyarı verebilir: **Ek bilgi → Yine de çalıştır** deyin.
+[Releases](https://github.com/Muhammed61/termify-releases/releases/latest) sayfasından `Termify-Setup-x.y.z.exe` dosyasını indirip çalıştırın. Kurulum dosyası imzasız olduğu için Windows SmartScreen uyarı verebilir: **Ek bilgi → Yine de çalıştır** deyin.
 
 İlk açılışta bir **ana parola** belirlersiniz. Tüm hostlarınız, parolalarınız ve anahtarlarınız bu parolayla şifrelenir.
 
@@ -50,7 +50,7 @@ npm start
 
 Ya da `baslat.bat` dosyasına çift tıklayın. Kurulum dosyası üretmek için `npm run dist` çalıştırın (çıktı `dist/` klasörüne gelir).
 
-Yeni bir sürüm etiketi (`v1.2.3`) gönderildiğinde GitHub Actions kurulum dosyasını derleyip otomatik olarak Releases sayfasına ekler.
+Sürüm yayınlamak için `package.json` içindeki sürümü artırıp aynı adla etiket gönderin (ör. `v1.0.2`). GitHub Actions kurulum dosyasını derleyip public [termify-releases](https://github.com/Muhammed61/termify-releases) deposuna yükler; kurulu uygulamalar yeni sürümü kendiliğinden bulur. Bunun için bu depoda `RELEASES_TOKEN` secret tanımlı olmalı (termify-releases için Contents: Read and write).
 
 ### Klasör yapısı
 

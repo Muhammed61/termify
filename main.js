@@ -8,6 +8,7 @@ const { SessionManager } = require('./src/main/sessions');
 const { ForwardManager } = require('./src/main/forward');
 const keys = require('./src/main/keys');
 const localfs = require('./src/main/localfs');
+const { initUpdater, updates } = require('./src/main/updater');
 
 let win = null;
 
@@ -215,14 +216,28 @@ function registerIpc() {
   handle('app:openExternal', (url) => {
     if (/^https?:\/\//.test(url)) shell.openExternal(url);
   }, { needsVault: false });
+
+  // Güncellemeler (kasa kilitliyken de çalışır)
+  handle('update:info', () => updates.info(), { needsVault: false });
+  handle('update:check', () => updates.check(), { needsVault: false });
+  handle('update:download', () => updates.download(), { needsVault: false });
 }
 
 app.setAppUserModelId('com.muhammed61.termify');
+
+// Tek pencere: ikinci kez açılınca mevcut pencere öne gelir
+if (!app.requestSingleInstanceLock()) app.exit(0);
+app.on('second-instance', () => {
+  if (!win) return;
+  if (win.isMinimized()) win.restore();
+  win.focus();
+});
 
 app.whenReady().then(() => {
   Menu.setApplicationMenu(null);
   registerIpc();
   createWindow();
+  initUpdater();
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });

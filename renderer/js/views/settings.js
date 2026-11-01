@@ -2,6 +2,7 @@
 import { h, icon, iconBtn, toast, confirmDialog, formDialog, promptDialog, passwordInput } from '../ui.js';
 import { store, saveSettings, reload } from '../state.js';
 import { THEMES } from '../themes.js';
+import { update, statusText, checkNow, startUpdate } from '../updates.js';
 
 export function renderKnownHosts(header, body) {
   header.append(h('h1', null, 'Bilinen Hostlar'));
@@ -107,8 +108,16 @@ export function renderSettings(header, body) {
       ].map(([a, k]) => row(a, null, h('span', { class: 'mono muted' }, k)))),
 
     h('div', { class: 'settings-card' },
+      h('h2', null, 'Güncellemeler'),
+      h('p', null, 'Termify yeni sürümleri kendisi denetler; yeni sürüm çıkınca ekranın üstünde bildirim görünür.'),
+      row(`Sürüm ${update.version || ''}`, statusText(),
+        update.state.status === 'available'
+          ? h('button', { class: 'btn primary', onclick: startUpdate }, icon('download', 14), 'Şimdi güncelle')
+          : h('button', { class: 'btn', disabled: ['checking', 'downloading', 'installing', 'dev'].includes(update.state.status), onclick: checkNow }, icon('refresh', 14), 'Güncellemeleri denetle'))),
+
+    h('div', { class: 'settings-card' },
       h('h2', null, 'Hakkında'),
-      h('p', { style: { margin: 0 } }, 'Termify 1.0 · Electron, xterm.js ve ssh2 ile geliştirildi.'))));
+      h('p', { style: { margin: 0 } }, `Termify ${update.version || ''} · Electron, xterm.js ve ssh2 ile geliştirildi.`))));
 }
 
 async function changePassword() {

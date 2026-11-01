@@ -9,6 +9,7 @@ import { renderKeys } from './views/keys.js';
 import { renderForwards } from './views/forwards.js';
 import { renderSnippets } from './views/snippets.js';
 import { renderKnownHosts, renderSettings } from './views/settings.js';
+import { onUpdate } from './updates.js';
 
 const SECTIONS = [
   { id: 'hosts', label: 'Hostlar', icon: 'server', render: renderHosts, count: () => store.data.hosts.length },
@@ -71,6 +72,8 @@ function renderSection(resetScroll = false) {
 }
 
 onChange(() => renderSection());
+// Ayarlar açıkken güncelleme durumu değişirse kartı yenile
+onUpdate(() => section === 'settings' && renderSection());
 
 // ---------- Kilit ekranı ----------
 async function showLock() {

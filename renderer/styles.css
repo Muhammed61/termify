@@ -81,6 +81,25 @@ input, textarea, select, button { font: inherit; color: inherit; }
 .dot.closed, .dot.error { background: var(--danger); }
 @keyframes pulse { 50% { opacity: .35; } }
 
+/* ---------- Güncelleme şeridi ---------- */
+#update-banner { display: none; }
+#update-banner.show {
+  display: flex; align-items: center; gap: 12px; flex: none;
+  position: relative; z-index: 95;
+  padding: 9px 16px; color: #fff; font-size: 13px;
+  background: linear-gradient(90deg, #4f6dff, #7a3cf0);
+  animation: fade .2s ease-out;
+}
+#update-banner.green { background: linear-gradient(90deg, #149e6a, #12a3a0); }
+#update-banner .grow { flex: 1; }
+#update-banner .btn.light { background: #fff; color: #4a32c8; border-color: #fff; font-weight: 600; }
+#update-banner .btn.light:hover { background: #eef0ff; }
+#update-banner .btn.ghost-light { background: none; border-color: transparent; color: rgba(255,255,255,.85); }
+#update-banner .btn.ghost-light:hover { background: rgba(255,255,255,.15); }
+#update-banner .ubar { width: 160px; height: 7px; border-radius: 4px; background: rgba(255,255,255,.25); overflow: hidden; }
+#update-banner .ubar span { display: block; height: 100%; background: #fff; border-radius: 4px; transition: width .2s; }
+#update-banner .upct { width: 40px; text-align: right; font-weight: 600; }
+
 #main { flex: 1; min-height: 0; display: flex; position: relative; }
 .view { flex: 1; min-width: 0; }
 .view:not(.active) { display: none !important; }

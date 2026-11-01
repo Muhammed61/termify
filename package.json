@@ -1,7 +1,7 @@
 {
   "name": "termify",
   "productName": "Termify",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Termify: Türkçe, Termius benzeri SSH istemcisi (terminal, SFTP, port yönlendirme, anahtar yönetimi)",
   "main": "main.js",
   "scripts": {
@@ -48,7 +48,11 @@
       "language": "1055",
       "deleteAppDataOnUninstall": false
     },
-    "publish": null
+    "publish": {
+      "provider": "github",
+      "owner": "Muhammed61",
+      "repo": "termify-releases"
+    }
   },
   "license": "MIT",
   "dependencies": {
@@ -56,6 +60,7 @@
     "@xterm/addon-search": "^0.16.0",
     "@xterm/addon-web-links": "^0.12.0",
     "@xterm/xterm": "^6.0.0",
+    "electron-updater": "^6.8.11",
     "ssh2": "^1.17.0"
   },
   "devDependencies": {

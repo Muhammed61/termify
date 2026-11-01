@@ -77,4 +77,10 @@ contextBridge.exposeInMainWorld('api', {
     active: call('forward:active'),
   },
   openExternal: call('app:openExternal'),
+  updates: {
+    info: call('update:info'),
+    check: call('update:check'),
+    download: call('update:download'),
+    onState: (fn) => on('update-state', fn),
+  },
 });
