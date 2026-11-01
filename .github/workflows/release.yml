@@ -1,0 +1,48 @@
+# v* etiketi gönderildiğinde Windows kurulum dosyasını derler ve GitHub Release oluşturur.
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run dist
+
+      - uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          name: Termify ${{ github.ref_name }}
+          files: dist/Termify-Setup-*.exe
+          body: |
+            ## Termify ${{ github.ref_name }}
+
+            Türkçe arayüzlü masaüstü SSH istemcisi.
+
+            ### Kurulum
+            Aşağıdaki **Termify-Setup-*.exe** dosyasını indirip çalıştırın.
+            Kurulum dosyası imzasız olduğu için Windows SmartScreen uyarı verebilir: **Ek bilgi → Yine de çalıştır**.
+
+            ### Özellikler
+            - Şifreli kasa (AES-256-GCM), otomatik kilit
+            - Hostlar: gruplar, etiketler, hızlı bağlan, atlama sunucusu
+            - Terminal: sekmeler, bölünmüş ekran, yayın modu, arama, 8 tema
+            - SFTP: çift panel, sürükle-bırak, uzak dosya düzenleme
+            - SSH anahtarı üretme/içe aktarma, tek tıkla sunucuya yükleme
+            - Port yönlendirme: yerel, uzak, SOCKS5
+            - Snippet'ler, bilinen hostlar, şifreli yedekleme

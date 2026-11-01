@@ -1,0 +1,71 @@
+{
+  "name": "termify",
+  "productName": "Termify",
+  "version": "1.0.0",
+  "description": "Termify: Türkçe, Termius benzeri SSH istemcisi (terminal, SFTP, port yönlendirme, anahtar yönetimi)",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win --publish never"
+  },
+  "build": {
+    "appId": "com.muhammed61.termify",
+    "productName": "Termify",
+    "copyright": "Copyright © 2026 Muhammed61",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "src/**/*",
+      "renderer/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.png",
+      "artifactName": "Termify-Setup-${version}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Termify",
+      "installerLanguages": [
+        "tr_TR"
+      ],
+      "language": "1055",
+      "deleteAppDataOnUninstall": false
+    },
+    "publish": null
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@xterm/addon-fit": "^0.11.0",
+    "@xterm/addon-search": "^0.16.0",
+    "@xterm/addon-web-links": "^0.12.0",
+    "@xterm/xterm": "^6.0.0",
+    "ssh2": "^1.17.0"
+  },
+  "devDependencies": {
+    "electron": "^45.2.1",
+    "electron-builder": "^26.18.0"
+  },
+  "author": "Muhammed61",
+  "homepage": "https://github.com/Muhammed61/termify",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Muhammed61/termify.git"
+  }
+}
