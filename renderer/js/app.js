@@ -10,6 +10,7 @@ import { renderForwards } from './views/forwards.js';
 import { renderSnippets } from './views/snippets.js';
 import { renderKnownHosts, renderSettings } from './views/settings.js';
 import { onUpdate } from './updates.js';
+import { MIN_PASSWORD, showRecoveryKey, forgotPassword, offerRecoveryKey } from './recovery.js';
 
 const SECTIONS = [
   { id: 'hosts', label: 'Hostlar', icon: 'server', render: renderHosts, count: () => store.data.hosts.length },
@@ -79,33 +80,51 @@ onUpdate(() => section === 'settings' && renderSection());
 async function showLock() {
   const st = await window.api.vault.status();
   const creating = !st.exists;
-  const pw = passwordInput({ placeholder: creating ? 'Yeni ana parola' : 'Ana parola', autofocus: true });
-  const pw2 = creating ? passwordInput({ placeholder: 'Ana parola (tekrar)' }) : null;
+  const pw = passwordInput({ placeholder: creating ? 'Yeni ana parola veya PIN' : 'Ana parola veya PIN', autofocus: true });
+  const pw2 = creating ? passwordInput({ placeholder: 'Tekrar' }) : null;
   const err = h('div', { class: 'err' });
   const btn = h('button', { class: 'btn primary', type: 'submit' }, creating ? 'Kasayı oluştur' : 'Kilidi aç');
+  const forgot = !creating
+    ? h('button', { type: 'button', class: 'link-btn', style: { alignSelf: 'center' }, onclick: async () => {
+      const r = await forgotPassword();
+      if (r === 'recovered') {
+        overlay.remove();
+        await afterUnlock();
+      } else if (r === 'reset') {
+        location.reload(); // açık sekmeler kapanır, kasa oluşturma ekranı gelir
+      }
+    } }, 'Parolamı unuttum')
+    : null;
   const overlay = h('div', { class: 'lock' },
     h('div', { class: 'lock-box' },
       h('img', { class: 'lock-logo', src: 'assets/logo.svg', alt: '' }),
       h('h1', null, creating ? "Termify'a hoş geldiniz" : 'Kasa kilitli'),
       h('p', null, creating
         ? 'Hostlarınız, parolalarınız ve anahtarlarınız bu ana parolayla şifrelenecek.'
-        : 'Devam etmek için ana parolanızı girin.'),
+        : 'Devam etmek için ana parolanızı veya PIN\'inizi girin.'),
       h('form', {
         onsubmit: async (e) => {
           e.preventDefault();
           const a = pw.querySelector('input').value;
           err.textContent = '';
           if (creating) {
-            if (a.length < 8) return (err.textContent = 'Parola en az 8 karakter olmalı');
+            if (a.length < MIN_PASSWORD) return (err.textContent = `Parola en az ${MIN_PASSWORD} karakter olmalı`);
             if (a !== pw2.querySelector('input').value) return (err.textContent = 'Parolalar eşleşmiyor');
           }
           btn.disabled = true;
           btn.textContent = creating ? 'Oluşturuluyor…' : 'Açılıyor…';
           try {
-            if (creating) await window.api.vault.create(a);
-            else await window.api.vault.unlock(a);
-            overlay.remove();
-            await afterUnlock();
+            if (creating) {
+              const key = await window.api.vault.create(a);
+              await showRecoveryKey(key);
+              overlay.remove();
+              await afterUnlock();
+            } else {
+              const r = await window.api.vault.unlock(a);
+              overlay.remove();
+              await afterUnlock();
+              if (!r.hasRecovery) offerRecoveryKey();
+            }
           } catch (ex) {
             err.textContent = ex.message;
             btn.disabled = false;
@@ -115,8 +134,9 @@ async function showLock() {
         },
       },
         pw, pw2,
-        creating ? h('div', { class: 'warn-box', style: { margin: 0, fontSize: '12px' } }, 'Bu parolayı unutursanız verileriniz kurtarılamaz. Güvenli bir yere not edin.') : null,
-        err, btn)));
+        creating ? h('div', { class: 'hint', style: { fontSize: '12px', color: 'var(--muted)' } }, `En az ${MIN_PASSWORD} karakter. İsterseniz 4 haneli bir PIN (ör. 2580) kullanabilirsiniz.`) : null,
+        creating ? h('div', { class: 'info-box', style: { margin: 0, fontSize: '12px' } }, 'Kasayı oluşturunca size bir kurtarma anahtarı verilecek. Parolanızı unutursanız kasanızı onunla açabilirsiniz.') : null,
+        err, btn, forgot)));
   document.body.append(overlay);
   setTimeout(() => pw.querySelector('input').focus(), 50);
 }

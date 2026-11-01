@@ -105,6 +105,20 @@ function registerIpc() {
   handle('vault:create', (pw) => vault.create(pw), { needsVault: false });
   handle('vault:unlock', (pw) => vault.unlock(pw), { needsVault: false });
   handle('vault:lock', () => vault.lock(), { needsVault: false });
+  handle('vault:recover', (key, newPw) => vault.recover(key, newPw), { needsVault: false });
+  handle('vault:reset', () => {
+    sessions.closeAll();
+    forwards.stopAll();
+    vault.reset();
+  }, { needsVault: false });
+  handle('vault:newRecoveryKey', () => vault.newRecoveryKey());
+  handle('vault:hasRecovery', () => vault.hasRecovery());
+  handle('vault:saveRecoveryKey', async (key) => {
+    const r = await dialog.showSaveDialog(win, { title: 'Kurtarma anahtarını kaydet', defaultPath: 'termify-kurtarma-anahtari.txt', filters: [{ name: 'Metin', extensions: ['txt'] }] });
+    if (r.canceled) return false;
+    fs.writeFileSync(r.filePath, `Termify kurtarma anahtarı\r\n\r\n${key}\r\n\r\nAna parolanızı unutursanız kilit ekranında "Parolamı unuttum" deyip bu anahtarı girin.\r\nBu dosyayı güvenli bir yerde saklayın; anahtarı bilen herkes kasanızı açabilir.\r\n`);
+    return r.filePath;
+  });
   handle('vault:changePassword', (oldPw, newPw) => vault.changePassword(oldPw, newPw));
   handle('vault:export', async () => {
     const r = await dialog.showSaveDialog(win, {

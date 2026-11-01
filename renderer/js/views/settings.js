@@ -3,6 +3,7 @@ import { h, icon, iconBtn, toast, confirmDialog, formDialog, promptDialog, passw
 import { store, saveSettings, reload } from '../state.js';
 import { THEMES } from '../themes.js';
 import { update, statusText, checkNow, startUpdate } from '../updates.js';
+import { MIN_PASSWORD, regenerateRecoveryKey } from '../recovery.js';
 
 export function renderKnownHosts(header, body) {
   header.append(h('h1', null, 'Bilinen Hostlar'));
@@ -87,11 +88,12 @@ export function renderSettings(header, body) {
       h('h2', null, 'Güvenlik'),
       h('p', null, 'Tüm hostlar, parolalar ve anahtarlar ana parolanızla AES-256-GCM kullanılarak şifrelenir.'),
       row('Otomatik kilit (dakika)', 'Bu süre boyunca işlem yapılmazsa kasa kilitlenir. 0 = kapalı', numberInput('autoLockMinutes', 0, 1440)),
-      row('Ana parola', null, h('button', { class: 'btn', onclick: changePassword }, icon('lock', 14), 'Ana parolayı değiştir'))),
+      row('Ana parola', 'Parola veya en az 4 haneli PIN', h('button', { class: 'btn', onclick: changePassword }, icon('lock', 14), 'Ana parolayı değiştir')),
+      recoveryRow()),
 
     h('div', { class: 'settings-card' },
       h('h2', null, 'Yedekleme ve senkronizasyon'),
-      h('p', null, 'Yedek dosyası şifrelidir ve ana parolanız olmadan açılamaz. Dosyayı Google Drive, OneDrive veya Dropbox klasörüne koyarak başka bir bilgisayarda "İçe aktar" ile aynı verilere ulaşabilirsiniz.'),
+      h('p', null, 'Yedek dosyası şifrelidir; ana parolanız veya kurtarma anahtarınız olmadan açılamaz. Dosyayı Google Drive, OneDrive veya Dropbox klasörüne koyarak başka bir bilgisayarda "İçe aktar" ile aynı verilere ulaşabilirsiniz.'),
       row('Dışa aktar', 'Tüm verileri şifreli bir .termify dosyasına kaydeder', h('button', { class: 'btn', onclick: exportBackup }, icon('upload', 14), 'Yedeği kaydet')),
       row('İçe aktar', 'Mevcut verilerin yerine yedekteki veriler gelir', h('button', { class: 'btn', onclick: importBackup }, icon('download', 14), 'Yedekten geri yükle'))),
 
@@ -120,16 +122,35 @@ export function renderSettings(header, body) {
       h('p', { style: { margin: 0 } }, `Termify ${update.version || ''} · Electron, xterm.js ve ssh2 ile geliştirildi.`))));
 }
 
+// Kurtarma anahtarı satırı: durum bilgisi ana süreçten sonradan gelir
+function recoveryRow() {
+  const hint = h('small', null, 'Kontrol ediliyor…');
+  const btn = h('button', { class: 'btn' }, icon('key', 14), 'Kurtarma anahtarı oluştur');
+  let has = false;
+  const refresh = () => window.api.vault.hasRecovery().then((v) => {
+    has = v;
+    hint.textContent = v ? 'Oluşturuldu. Parolanızı unutursanız kilit ekranında "Parolamı unuttum" deyip bu anahtarı girin.' : 'Oluşturulmadı! Parolanızı unutursanız verilerinize ulaşamazsınız.';
+    hint.style.color = v ? '' : 'var(--danger)';
+    btn.lastChild.textContent = v ? 'Yeni anahtar oluştur' : 'Kurtarma anahtarı oluştur';
+    btn.classList.toggle('primary', !v);
+  });
+  btn.addEventListener('click', async () => {
+    if (await regenerateRecoveryKey(has)) refresh();
+  });
+  refresh();
+  return h('div', { class: 'setting-row' }, h('div', { class: 'label' }, 'Kurtarma anahtarı', hint), h('div', { class: 'control' }, btn));
+}
+
 async function changePassword() {
   const v = await formDialog({
     title: 'Ana parolayı değiştir',
     submitLabel: 'Değiştir',
     fields: [
       { name: 'old', label: 'Mevcut parola', type: 'password', required: true },
-      { name: 'pw', label: 'Yeni parola', type: 'password', required: true, hint: 'En az 8 karakter' },
+      { name: 'pw', label: 'Yeni parola', type: 'password', required: true, hint: 'En az ' + MIN_PASSWORD + ' karakter; 4 haneli PIN de olur' },
       { name: 'pw2', label: 'Yeni parola (tekrar)', type: 'password', required: true },
     ],
-    validate: (x) => (x.pw.length < 8 ? 'Yeni parola en az 8 karakter olmalı' : x.pw !== x.pw2 ? 'Yeni parolalar eşleşmiyor' : null),
+    validate: (x) => (x.pw.length < MIN_PASSWORD ? 'Yeni parola en az ' + MIN_PASSWORD + ' karakter olmalı' : x.pw !== x.pw2 ? 'Yeni parolalar eşleşmiyor' : null),
     onSubmit: (x) => window.api.vault.changePassword(x.old, x.pw),
   });
   if (v) toast('Ana parola değiştirildi', 'success');
@@ -146,7 +167,7 @@ async function exportBackup() {
 
 async function importBackup() {
   if (!(await confirmDialog('Mevcut tüm hostlar, anahtarlar ve ayarlar yedekteki verilerle değiştirilecek.', { title: 'Yedekten geri yükle', okLabel: 'Devam et', danger: true }))) return;
-  const pw = await promptDialog({ title: 'Yedeğin parolası', message: 'Yedeği oluştururken kullanılan ana parolayı girin.', secret: true });
+  const pw = await promptDialog({ title: 'Yedeğin parolası', message: 'Yedeği oluştururken kullanılan ana parolayı veya kurtarma anahtarını girin.', secret: true });
   if (pw == null) return;
   try {
     const ok = await window.api.vault.importBackup(pw);

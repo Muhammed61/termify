@@ -23,7 +23,7 @@
 
 ## Özellikler
 
-- **Şifreli kasa:** Her şey ana parolayla AES-256-GCM (scrypt) ile şifrelenir. Belirlenen süre boşta kalınca otomatik kilitlenir.
+- **Şifreli kasa:** Her şey ana parolayla veya 4+ haneli PIN ile AES-256-GCM (scrypt) şifrelenir. Parolayı unutursanız kurtarma anahtarıyla yeni parola belirlersiniz. Boşta kalınca otomatik kilitlenir.
 - **Hostlar:** Gruplar, etiketler, renkler, arama. Hızlı bağlan (`kullanici@sunucu:port`), atlama sunucusu (ProxyJump) ve başlangıç komutu desteklenir.
 - **Terminal:** Sekmeler, dikey/yatay bölme (4 panele kadar), yayın modu (tüm panellere aynı anda yazma), arama, 8 renk teması. Bağlantı koparsa Enter ile yeniden bağlanır.
 - **SFTP:** Çift panel (bilgisayar ↔ sunucu), sürükle-bırak (Windows Gezgini'nden de), klasör aktarımı, ilerleme çubuğu, uzak dosya düzenleme, izin değiştirme.
