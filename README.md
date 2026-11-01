@@ -10,14 +10,16 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/Muhammed61/termify-releases/releases/latest"><b>⬇ Windows için indir (Setup .exe)</b></a>
+  <a href="https://github.com/Muhammed61/termify-releases/releases/latest"><b>⬇ İndir: Windows (.exe) · macOS (.dmg)</b></a>
 </p>
 
 ![Hostlar](docs/hostlar.png)
 
 ## Kurulum
 
-[Releases](https://github.com/Muhammed61/termify-releases/releases/latest) sayfasından `Termify-Setup-x.y.z.exe` dosyasını indirip çalıştırın. Kurulum dosyası imzasız olduğu için Windows SmartScreen uyarı verebilir: **Ek bilgi → Yine de çalıştır** deyin.
+**Windows:** [Releases](https://github.com/Muhammed61/termify-releases/releases/latest) sayfasından `Termify-Setup-x.y.z.exe` dosyasını indirip çalıştırın. Kurulum dosyası imzasız olduğu için Windows SmartScreen uyarı verebilir: **Ek bilgi → Yine de çalıştır** deyin.
+
+**macOS:** Apple Silicon (M1/M2/M3/M4) için `Termify-x.y.z-arm64.dmg`, Intel Mac için `Termify-x.y.z-x64.dmg` dosyasını indirin, açın ve Termify'yi **Uygulamalar** klasörüne sürükleyin. Uygulama Apple sertifikasıyla imzalı olmadığı için ilk açılışta uyarı çıkar: **Sistem Ayarları → Gizlilik ve Güvenlik → Yine de Aç**. "Hasarlı" uyarısı çıkarsa Terminal'de bir kez `xattr -cr /Applications/Termify.app` çalıştırın. macOS 12 veya üstü gerekir. Mac'te kısayollar Ctrl+Shift yerine Cmd ile çalışır (ör. Cmd+T, Cmd+W, Cmd+D).
 
 İlk açılışta bir **ana parola** belirlersiniz. Tüm hostlarınız, parolalarınız ve anahtarlarınız bu parolayla şifrelenir.
 
@@ -48,9 +50,9 @@ npm install
 npm start
 ```
 
-Ya da `baslat.bat` dosyasına çift tıklayın. Kurulum dosyası üretmek için `npm run dist` çalıştırın (çıktı `dist/` klasörüne gelir).
+Ya da `baslat.bat` dosyasına çift tıklayın. Kurulum dosyası üretmek için `npm run dist` (Windows) veya bir Mac'te `npm run dist:mac` çalıştırın (çıktı `dist/` klasörüne gelir).
 
-Sürüm yayınlamak için `package.json` içindeki sürümü artırıp aynı adla etiket gönderin (ör. `v1.0.2`). GitHub Actions kurulum dosyasını derleyip public [termify-releases](https://github.com/Muhammed61/termify-releases) deposuna yükler; kurulu uygulamalar yeni sürümü kendiliğinden bulur. Bunun için bu depoda `RELEASES_TOKEN` secret tanımlı olmalı (termify-releases için Contents: Read and write).
+Sürüm yayınlamak için `package.json` içindeki sürümü artırıp aynı adla etiket gönderin (ör. `v1.0.2`). GitHub Actions Windows ve macOS kurulum dosyalarını derleyip public [termify-releases](https://github.com/Muhammed61/termify-releases) deposuna yükler; kurulu uygulamalar yeni sürümü kendiliğinden bulur (Windows kendini günceller; Mac'te uygulama imzasız olduğu için bildirimdeki "İndir" yeni .dmg dosyasını tarayıcıda açar). Bunun için bu depoda `RELEASES_TOKEN` secret tanımlı olmalı (termify-releases için Contents: Read and write).
 
 ### Klasör yapısı
 
@@ -59,6 +61,6 @@ Sürüm yayınlamak için `package.json` içindeki sürümü artırıp aynı adl
 - `src/main/`: Kasa, SSH bağlantısı, oturumlar/SFTP, port yönlendirme, anahtarlar
 - `renderer/`: Arayüz (HTML/CSS/JS modülleri)
 
-Veriler `%APPDATA%\Termify\kasa.json` dosyasında şifreli olarak saklanır.
+Veriler şifreli olarak `%APPDATA%\Termify\kasa.json` (Windows) veya `~/Library/Application Support/Termify/kasa.json` (macOS) dosyasında saklanır.
 
 Electron, xterm.js ve ssh2 ile geliştirildi.

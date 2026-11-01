@@ -1,5 +1,11 @@
 // Ortak arayüz yardımcıları: DOM oluşturma, simgeler, modal, menü, bildirim.
 
+// macOS'ta uygulama kısayolları Ctrl+Shift yerine Cmd ile çalışır (Ctrl terminale gider)
+export const isMac = window.api.platform === 'darwin';
+export const mod = (e) => (isMac ? e.metaKey : e.ctrlKey);
+// Kısayol metnini platforma çevirir: "Ctrl+Shift+F" → "Cmd+F", "Ctrl+V" → "Cmd+V". Ctrl+Tab aynı kalır.
+export const kbd = (s) => (isMac ? s.replace(/Ctrl\+(Shift\+)?(?!(Shift\+)?Tab)/g, 'Cmd+') : s);
+
 export function h(tag, attrs, ...children) {
   const el = document.createElement(tag);
   if (attrs) {

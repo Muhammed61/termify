@@ -11,6 +11,7 @@ const localfs = require('./src/main/localfs');
 const { initUpdater, updates } = require('./src/main/updater');
 
 let win = null;
+const isMac = process.platform === 'darwin';
 
 // Eski adıyla (Kabuk SSH) oluşturulmuş kasayı yeni klasöre taşı
 const dataDir = app.getPath('userData');
@@ -49,11 +50,15 @@ function createWindow() {
     title: 'Termify',
     icon: path.join(__dirname, 'renderer', 'assets', 'icon.png'),
     titleBarStyle: 'hidden',
-    titleBarOverlay: { color: '#101216', symbolColor: '#aab2bf', height: 38 },
+    // macOS'ta sol üstteki trafik ışıkları, Windows'ta sağ üstteki pencere düğmeleri
+    ...(isMac
+      ? { trafficLightPosition: { x: 14, y: 12 } }
+      : { titleBarOverlay: { color: '#101216', symbolColor: '#aab2bf', height: 38 } }),
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
+      additionalArguments: ['--termify-platform=' + process.platform],
     },
   });
   win.loadFile(path.join(__dirname, 'renderer', 'index.html'));
@@ -65,7 +70,7 @@ function createWindow() {
   });
   win.webContents.on('will-navigate', (e) => e.preventDefault());
   win.webContents.on('before-input-event', (e, input) => {
-    if (input.type === 'keyDown' && input.control && input.shift && input.key.toLowerCase() === 'i') {
+    if (input.type === 'keyDown' && (isMac ? input.meta && input.alt : input.control && input.shift) && input.key.toLowerCase() === 'i') {
       win.webContents.toggleDevTools();
     }
   });
@@ -247,8 +252,47 @@ app.on('second-instance', () => {
   win.focus();
 });
 
+// macOS'ta menü çubuğu zorunlu; Cmd+C/V/Q/H gibi kısayollar da menü üzerinden çalışır.
+// Cmd+W bilerek menüde yok: arayüzde sekmeyi kapatır.
+function macMenu() {
+  return Menu.buildFromTemplate([
+    {
+      label: 'Termify',
+      submenu: [
+        { role: 'about', label: 'Termify Hakkında' },
+        { type: 'separator' },
+        { role: 'hide', label: "Termify'yi Gizle" },
+        { role: 'hideOthers', label: 'Diğerlerini Gizle' },
+        { role: 'unhide', label: 'Tümünü Göster' },
+        { type: 'separator' },
+        { role: 'quit', label: "Termify'den Çık" },
+      ],
+    },
+    {
+      label: 'Düzen',
+      submenu: [
+        { role: 'undo', label: 'Geri Al' },
+        { role: 'redo', label: 'Yinele' },
+        { type: 'separator' },
+        { role: 'cut', label: 'Kes' },
+        { role: 'copy', label: 'Kopyala' },
+        { role: 'paste', label: 'Yapıştır' },
+        { role: 'selectAll', label: 'Tümünü Seç' },
+      ],
+    },
+    {
+      label: 'Pencere',
+      submenu: [
+        { role: 'minimize', label: 'Küçült' },
+        { role: 'zoom', label: 'Yakınlaştır' },
+        { role: 'togglefullscreen', label: 'Tam Ekran' },
+      ],
+    },
+  ]);
+}
+
 app.whenReady().then(() => {
-  Menu.setApplicationMenu(null);
+  Menu.setApplicationMenu(isMac ? macMenu() : null);
   registerIpc();
   createWindow();
   initUpdater();
@@ -260,5 +304,7 @@ app.whenReady().then(() => {
 app.on('window-all-closed', () => {
   sessions.closeAll();
   forwards.stopAll();
-  if (process.platform !== 'darwin') app.quit();
+  // macOS'ta uygulama Dock'ta açık kalır; pencere yeniden açılınca kasa parola ister
+  if (isMac) vault.lock();
+  else app.quit();
 });

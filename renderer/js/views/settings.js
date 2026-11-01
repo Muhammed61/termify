@@ -1,5 +1,5 @@
 // Bilinen hostlar ve Ayarlar ekranları.
-import { h, icon, iconBtn, toast, confirmDialog, formDialog, promptDialog, passwordInput } from '../ui.js';
+import { h, icon, iconBtn, toast, confirmDialog, formDialog, promptDialog, passwordInput, isMac, kbd } from '../ui.js';
 import { store, saveSettings, reload } from '../state.js';
 import { THEMES } from '../themes.js';
 import { update, statusText, checkNow, startUpdate } from '../updates.js';
@@ -104,17 +104,17 @@ export function renderSettings(header, body) {
         ['Sekmeyi kapat', 'Ctrl+Shift+W'],
         ['Sonraki / önceki sekme', 'Ctrl+Tab / Ctrl+Shift+Tab'],
         ['Dikey / yatay böl', 'Ctrl+Shift+D / Ctrl+Shift+E'],
-        ['Kopyala / Yapıştır', 'Ctrl+Shift+C (veya seçiliyken Ctrl+C) / Ctrl+V'],
+        ['Kopyala / Yapıştır', isMac ? 'Cmd+C / Cmd+V' : 'Ctrl+Shift+C (veya seçiliyken Ctrl+C) / Ctrl+V'],
         ['Terminalde ara', 'Ctrl+Shift+F'],
         ['Kasayı kilitle', 'Ctrl+Shift+L'],
-      ].map(([a, k]) => row(a, null, h('span', { class: 'mono muted' }, k)))),
+      ].map(([a, k]) => row(a, null, h('span', { class: 'mono muted' }, kbd(k))))),
 
     h('div', { class: 'settings-card' },
       h('h2', null, 'Güncellemeler'),
       h('p', null, 'Termify yeni sürümleri kendisi denetler; yeni sürüm çıkınca ekranın üstünde bildirim görünür.'),
       row(`Sürüm ${update.version || ''}`, statusText(),
         update.state.status === 'available'
-          ? h('button', { class: 'btn primary', onclick: startUpdate }, icon('download', 14), 'Şimdi güncelle')
+          ? h('button', { class: 'btn primary', onclick: startUpdate }, icon('download', 14), update.manual ? 'İndir' : 'Şimdi güncelle')
           : h('button', { class: 'btn', disabled: ['checking', 'downloading', 'installing', 'dev'].includes(update.state.status), onclick: checkNow }, icon('refresh', 14), 'Güncellemeleri denetle'))),
 
     h('div', { class: 'settings-card' },

@@ -9,6 +9,9 @@ async function invoke(channel, ...args) {
 
 const call = (channel) => (...args) => invoke(channel, ...args);
 
+// Ana süreç platformu argüman olarak verir (macOS'ta kısayollar Cmd ile çalışır)
+const platform = (process.argv.find((a) => a.startsWith('--termify-platform=')) || '').split('=')[1] || process.platform;
+
 function on(channel, fn) {
   const listener = (_e, ...args) => fn(...args);
   ipcRenderer.on(channel, listener);
@@ -16,6 +19,7 @@ function on(channel, fn) {
 }
 
 contextBridge.exposeInMainWorld('api', {
+  platform,
   on,
   replyAsk: (id, value) => ipcRenderer.send('ask:reply', id, value),
   pathForFile: (file) => webUtils.getPathForFile(file),

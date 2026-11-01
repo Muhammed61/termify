@@ -1,5 +1,5 @@
 // SFTP sekmesi: solda yerel bilgisayar, sağda uzak sunucu; sürükle-bırak ile aktarım.
-import { h, icon, iconBtn, clear, toast, modal, confirmDialog, promptDialog, contextMenu, formatBytes, formatDate, formatMode, avatar } from './ui.js';
+import { h, icon, iconBtn, clear, toast, modal, confirmDialog, promptDialog, contextMenu, formatBytes, formatDate, formatMode, avatar, mod, kbd } from './ui.js';
 import { store, hostLabel, hostAddress, getHost, parseQuick } from './state.js';
 import { addTab, closeTab } from './tabs.js';
 
@@ -293,7 +293,7 @@ function createPanel(ops, hooks) {
       const a = list.findIndex((x) => x.name === panel.anchor);
       const b = list.findIndex((x) => x.name === e.name);
       panel.selected = new Set(list.slice(Math.min(a, b), Math.max(a, b) + 1).map((x) => x.name));
-    } else if (ev.ctrlKey) {
+    } else if (mod(ev)) {
       if (panel.selected.has(e.name)) panel.selected.delete(e.name);
       else panel.selected.add(e.name);
       panel.anchor = e.name;
@@ -393,7 +393,7 @@ function createPanel(ops, hooks) {
       const s = selectedEntries();
       if (s.length === 1) panel.open(s[0]);
     } else if (ev.key === 'Backspace') panel.up();
-    else if (ev.key === 'a' && ev.ctrlKey) {
+    else if (ev.key === 'a' && mod(ev)) {
       ev.preventDefault();
       panel.selected = new Set(list.map((x) => x.name));
       panel.render();
@@ -458,7 +458,7 @@ async function editRemote(ctx, path, entry) {
       e.preventDefault();
       document.execCommand('insertText', false, '  ');
     }
-    if (e.key === 's' && e.ctrlKey) {
+    if (e.key === 's' && mod(e)) {
       e.preventDefault();
       save();
     }
@@ -481,7 +481,7 @@ async function editRemote(ctx, path, entry) {
         if (dirty && !(await confirmDialog('Kaydedilmemiş değişiklikler kaybolacak.', { okLabel: 'Kaydetmeden kapat', danger: true }))) return;
         close();
       } },
-      { label: 'Kaydet (Ctrl+S)', primary: true, onClick: () => save() },
+      { label: kbd('Kaydet (Ctrl+S)'), primary: true, onClick: () => save() },
     ],
   });
 }

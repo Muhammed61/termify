@@ -1,12 +1,13 @@
 {
   "name": "termify",
   "productName": "Termify",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Termify: Türkçe, Termius benzeri SSH istemcisi (terminal, SFTP, port yönlendirme, anahtar yönetimi)",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "dist": "electron-builder --win --publish never"
+    "dist": "electron-builder --win --publish never",
+    "dist:mac": "electron-builder --mac --publish never"
   },
   "build": {
     "appId": "com.muhammed61.termify",
@@ -21,7 +22,9 @@
       "preload.js",
       "src/**/*",
       "renderer/**/*",
-      "package.json"
+      "package.json",
+      "!node_modules/ssh2/lib/protocol/crypto/build/**",
+      "!node_modules/cpu-features/**"
     ],
     "win": {
       "target": [
@@ -48,11 +51,40 @@
       "language": "1055",
       "deleteAppDataOnUninstall": false
     },
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "arm64",
+            "x64"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "arm64",
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon-mac.png",
+      "category": "public.app-category.developer-tools",
+      "artifactName": "Termify-${version}-${arch}.${ext}",
+      "identity": "-",
+      "hardenedRuntime": false,
+      "minimumSystemVersion": "12.0"
+    },
+    "dmg": {
+      "title": "Termify ${version}",
+      "artifactName": "Termify-${version}-${arch}.${ext}"
+    },
     "publish": {
       "provider": "github",
       "owner": "Muhammed61",
       "repo": "termify-releases"
-    }
+    },
+    "npmRebuild": false
   },
   "license": "MIT",
   "dependencies": {

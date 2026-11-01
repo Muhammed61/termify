@@ -1,5 +1,5 @@
 // Terminal sekmeleri: xterm.js, bölünmüş paneller, yayın modu, arama, snippet çalıştırma.
-import { h, icon, iconBtn, toast, contextMenu } from './ui.js';
+import { h, icon, iconBtn, toast, contextMenu, isMac, kbd } from './ui.js';
 import { store, onChange, hostLabel, getHost } from './state.js';
 import { addTab, allTabs, activate, activeTab, closeTab } from './tabs.js';
 import { termTheme } from './themes.js';
@@ -104,7 +104,7 @@ export function openTerminal(hostRef) {
     broadcastBtn,
     snippetBtn,
     h('button', { type: 'button', class: 'btn ghost sm', title: 'Bu host için SFTP aç', onclick: () => openSftp(ctrl.focused ? ctrl.focused.hostRef : hostRef) }, icon('folder', 15), 'SFTP'),
-    iconBtn('search', 'Ara (Ctrl+Shift+F)', () => ctrl.openSearch(), 'btn ghost sm icon-btn'),
+    iconBtn('search', kbd('Ara (Ctrl+Shift+F)'), () => ctrl.openSearch(), 'btn ghost sm icon-btn'),
     h('div', { class: 'spacer' }),
     searchBox);
 
@@ -254,7 +254,8 @@ function createPane(ctrl, hostRef) {
   term.attachCustomKeyEventHandler((e) => {
     if (e.type !== 'keydown') return true;
     const k = e.key.toLowerCase();
-    if (e.ctrlKey && e.shiftKey) {
+    // Windows: Ctrl+Shift+harf; macOS: Cmd+harf (Ctrl tuşları terminale gider)
+    if (isMac ? e.metaKey : e.ctrlKey && e.shiftKey) {
       if (k === 'c') {
         if (term.hasSelection()) navigator.clipboard.writeText(term.getSelection());
         return false;
@@ -264,9 +265,9 @@ function createPane(ctrl, hostRef) {
         ctrl.openSearch();
         return false;
       }
-      if (['w', 't', 'd', 'e', 'tab'].includes(k)) return false; // genel kısayollar
+      if (['w', 't', 'd', 'e', 'l', 'tab'].includes(k)) return false; // genel kısayollar
     }
-    if (e.ctrlKey && !e.shiftKey && !e.altKey) {
+    if (!isMac && e.ctrlKey && !e.shiftKey && !e.altKey) {
       if (k === 'c' && term.hasSelection()) {
         navigator.clipboard.writeText(term.getSelection());
         term.clearSelection();
@@ -289,11 +290,11 @@ function createPane(ctrl, hostRef) {
     e.preventDefault();
     ctrl.focus(pane);
     contextMenu(e.clientX, e.clientY, [
-      { label: 'Kopyala', icon: 'copy', kbd: 'Ctrl+Shift+C', disabled: !term.hasSelection(), onClick: () => navigator.clipboard.writeText(term.getSelection()) },
-      { label: 'Yapıştır', kbd: 'Ctrl+V', onClick: () => pasteInto(term) },
+      { label: 'Kopyala', icon: 'copy', kbd: kbd('Ctrl+Shift+C'), disabled: !term.hasSelection(), onClick: () => navigator.clipboard.writeText(term.getSelection()) },
+      { label: 'Yapıştır', kbd: kbd('Ctrl+V'), onClick: () => pasteInto(term) },
       { label: 'Tümünü seç', onClick: () => term.selectAll() },
       { label: 'Ekranı temizle', onClick: () => term.clear() },
-      { label: 'Ara', icon: 'search', kbd: 'Ctrl+Shift+F', onClick: () => ctrl.openSearch() },
+      { label: 'Ara', icon: 'search', kbd: kbd('Ctrl+Shift+F'), onClick: () => ctrl.openSearch() },
       '-',
       { label: 'Dikey böl', icon: 'splitV', onClick: () => ctrl.split('row') },
       { label: 'Yatay böl', icon: 'splitH', onClick: () => ctrl.split('column') },

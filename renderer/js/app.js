@@ -1,5 +1,5 @@
 // Uygulama girişi: kilit ekranı, Kasa sekmesi, kenar menü, kısayollar, sorular.
-import { h, icon, clear, modal, toast, promptDialog, passwordInput, closeMenu } from './ui.js';
+import { h, icon, clear, modal, toast, promptDialog, passwordInput, closeMenu, isMac, mod, kbd } from './ui.js';
 import { store, onChange, reload, notify } from './state.js';
 import { addTab, activate, activeTab, closeTab, cycle } from './tabs.js';
 import { terminalControllers } from './terminal.js';
@@ -21,6 +21,9 @@ const SECTIONS = [
   { id: 'settings', label: 'Ayarlar', icon: 'settings', render: renderSettings },
 ];
 
+// macOS: başlık çubuğunda trafik ışıklarına yer açılır
+if (isMac) document.documentElement.classList.add('mac');
+
 let section = 'hosts';
 let homeTab = null;
 let navEl;
@@ -33,7 +36,7 @@ function buildHome() {
     navEl,
     h('div', { class: 'spacer' }),
     h('button', { class: 'nav-item', onclick: () => openSftp(null) }, icon('folder', 17), 'Yeni SFTP'),
-    h('button', { class: 'nav-item', onclick: lock, title: 'Ctrl+Shift+L' }, icon('lock', 17), 'Kasayı kilitle'));
+    h('button', { class: 'nav-item', onclick: lock, title: kbd('Ctrl+Shift+L') }, icon('lock', 17), 'Kasayı kilitle'));
   const view = h('div', { class: 'home' }, sidebar, contentEl);
   homeTab = addTab({ title: 'Kasa', icon: 'server', view, closable: false, home: true });
   renderSection();
@@ -215,7 +218,7 @@ document.addEventListener('keydown', (e) => {
   if (e.ctrlKey && k === 'tab') {
     e.preventDefault();
     cycle(e.shiftKey ? -1 : 1);
-  } else if (e.ctrlKey && e.shiftKey) {
+  } else if (mod(e) && (isMac || e.shiftKey)) {
     if (k === 't') {
       e.preventDefault();
       showSection('hosts');

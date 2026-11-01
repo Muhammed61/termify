@@ -1,11 +1,15 @@
 // Otomatik güncelleme: public Muhammed61/termify-releases deposundaki sürümleri denetler.
 // Yeni sürüm varsa arayüzde şerit gösterilir; kullanıcı onaylayınca indirilir, kurulur
 // ve uygulama yeniden açılır. Kaynak kod gizli kalır, sadece kurulum dosyası dağıtılır.
-const { app, BrowserWindow } = require('electron');
+// macOS'ta uygulama Apple sertifikasıyla imzalı olmadığı için kendini değiştiremez; orada
+// yeni sürüm yine bildirilir ama "İndir" tarayıcıda .dmg dosyasını açar.
+const { app, BrowserWindow, shell } = require('electron');
 const { autoUpdater } = require('electron-updater');
 
 // Durumlar: idle | dev | checking | none | available | downloading | installing | error
 let state = { status: app.isPackaged ? 'idle' : 'dev' };
+const manual = process.platform === 'darwin';
+const RELEASES = 'https://github.com/Muhammed61/termify-releases/releases';
 let available = '';
 let lastCheck = 0;
 let checking = false;
@@ -68,7 +72,7 @@ function initUpdater() {
 
 const updates = {
   info() {
-    return { version: app.getVersion(), state };
+    return { version: app.getVersion(), state, manual };
   },
 
   async check() {
@@ -87,6 +91,11 @@ const updates = {
   // Kullanıcının onayıyla indirir; inince kurup uygulamayı yeniden başlatır
   download() {
     if (state.status !== 'available') return false;
+    if (manual) {
+      const dmg = `Termify-${available}-${process.arch === 'arm64' ? 'arm64' : 'x64'}.dmg`;
+      shell.openExternal(`${RELEASES}/download/v${available}/${dmg}`);
+      return true;
+    }
     set({ status: 'downloading', version: available, percent: 0 });
     autoUpdater.downloadUpdate().catch(() => undefined);
     return true;
