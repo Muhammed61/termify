@@ -78,11 +78,32 @@ jobs:
     needs: build
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
     steps:
       - uses: actions/download-artifact@v4
         with:
           path: dist
           merge-multiple: true
+
+      # İndirilen dosyanın bozulmadığını / değiştirilmediğini kontrol etmek için
+      - name: SHA256 özetlerini hesapla
+        working-directory: dist
+        run: sha256sum Termify-*.exe Termify-*.dmg Termify-*.zip Termify-*.deb Termify-*.AppImage | tee SHA256SUMS.txt
+
+      # Kurulum dosyalarının bu depodaki kaynak koddan GitHub Actions'ta derlendiğinin
+      # imzalı kanıtı (Sigstore). Doğrulama: gh attestation verify <dosya> --repo Muhammed61/termify
+      - name: Derleme kanıtı oluştur
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: |
+            dist/Termify-*.exe
+            dist/Termify-*.dmg
+            dist/Termify-*.zip
+            dist/Termify-*.deb
+            dist/Termify-*.AppImage
 
       - name: Sürüm reposuna yükle ve yayına al
         env:
@@ -94,7 +115,7 @@ jobs:
           required=("Termify-Setup-$v.exe" "Termify-Setup-$v.exe.blockmap" "latest.yml"
                     "Termify-$v-arm64.dmg" "Termify-$v-x64.dmg" "Termify-$v-arm64.zip" "Termify-$v-x64.zip" "latest-mac.yml"
                     "Termify-$v-amd64.deb" "Termify-$v-arm64.deb" "Termify-$v-x86_64.AppImage" "Termify-$v-arm64.AppImage"
-                    "latest-linux.yml" "latest-linux-arm64.yml")
+                    "latest-linux.yml" "latest-linux-arm64.yml" "SHA256SUMS.txt")
           for f in "${required[@]}"; do [ -f "dist/$f" ] || { echo "Derlemede eksik dosya: $f"; ls dist; exit 1; }; done
           files=(dist/*)
 
@@ -108,6 +129,8 @@ jobs:
           **macOS:** Apple Silicon (M1/M2/M3/M4) için Termify-$v-arm64.dmg, Intel Mac için Termify-$v-x64.dmg dosyasını indirin, açın ve Termify'yi Uygulamalar klasörüne sürükleyin. Uygulama Apple sertifikasıyla imzalı olmadığı için ilk açılışta uyarı çıkar: Sistem Ayarları → Gizlilik ve Güvenlik → Yine de Aç. \"Hasarlı\" uyarısı çıkarsa Terminal'de bir kez şunu çalıştırın: xattr -cr /Applications/Termify.app
 
           **Linux (Kali, Debian, Ubuntu):** Termify-$v-amd64.deb dosyasını indirip şunu çalıştırın: sudo apt install ./Termify-$v-amd64.deb (ARM cihazlar için arm64.deb). Kurulumsuz kullanmak için .AppImage dosyası da var: chmod +x ile çalıştırılabilir yapıp açın (libfuse2 gerekir).
+
+          **Doğrulama:** Dosyaların SHA256 özetleri SHA256SUMS.txt içindedir. Her dosyanın Muhammed61/termify deposundaki kaynak koddan GitHub Actions'ta derlendiği şu komutla doğrulanabilir: gh attestation verify <dosya> --repo Muhammed61/termify
 
           Kurulu uygulamalar yeni sürümü kendiliğinden bulur."
           fi
