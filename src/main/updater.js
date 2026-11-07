@@ -1,6 +1,6 @@
 // Otomatik güncelleme: public Muhammed61/termify-releases deposundaki sürümleri denetler.
 // Yeni sürüm varsa arayüzde şerit gösterilir; kullanıcı onaylayınca indirilir, kurulur
-// ve uygulama yeniden açılır. Kaynak kod gizli kalır, sadece kurulum dosyası dağıtılır.
+// ve uygulama yeniden açılır.
 // macOS'ta uygulama Apple sertifikasıyla imzalı olmadığı için kendini değiştiremez; orada
 // yeni sürüm yine bildirilir ama "İndir" tarayıcıda .dmg dosyasını açar.
 const { app, BrowserWindow, shell } = require('electron');

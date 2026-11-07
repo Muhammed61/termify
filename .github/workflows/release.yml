@@ -2,7 +2,7 @@ name: Sürüm yayınla
 
 # "v1.2.3" biçiminde bir etiket gönderildiğinde Windows (.exe), macOS (.dmg) ve Linux (.deb, AppImage) kurulum
 # dosyalarını derler ve public Muhammed61/termify-releases reposunun Releases bölümüne yükler.
-# Kod gizli kalır; kurulu uygulamalar güncellemeleri o repodan alır.
+# Kurulu uygulamalar güncellemeleri o repodan alır.
 # Gerekli secret: RELEASES_TOKEN (termify-releases için Contents: Read and write).
 # Actions sekmesinden elle "Run workflow" denirse sadece derlenir, yayınlanmaz (deneme için).
 on:

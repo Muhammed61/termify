@@ -132,7 +132,8 @@
     "electron-builder": "^26.18.0"
   },
   "author": "Muhammed61",
-  "homepage": "https://github.com/Muhammed61/termify-releases",
+  "homepage": "https://github.com/Muhammed61/termify",
+  "bugs": "https://github.com/Muhammed61/termify/issues",
   "repository": {
     "type": "git",
     "url": "https://github.com/Muhammed61/termify.git"

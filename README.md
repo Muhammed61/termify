@@ -65,4 +65,14 @@ Sürüm yayınlamak için `package.json` içindeki sürümü artırıp aynı adl
 
 Veriler şifreli olarak `%APPDATA%\Termify\kasa.json` (Windows) `~/Library/Application Support/Termify/kasa.json` (macOS) veya `~/.config/Termify/kasa.json` (Linux) dosyasında saklanır.
 
-Electron, xterm.js ve ssh2 ile geliştirildi.
+## Katkıda bulunma
+
+Termify açık kaynaklıdır; hata bildirimleri, öneriler ve katkılar memnuniyetle karşılanır.
+
+- **Hata veya öneri:** [Issues](https://github.com/Muhammed61/termify/issues) bölümünden yeni bir kayıt açın. Hatayı nasıl tekrarlayabileceğimizi, işletim sisteminizi ve Termify sürümünüzü (Ayarlar → Güncellemeler) yazın.
+- **Kod katkısı:** Depoyu fork'layın, değişikliğinizi ayrı bir dalda yapın ve Pull Request gönderin. Arayüz metinleri Türkçedir; yeni metinleri de Türkçe yazın.
+- **Güvenlik açığı:** Termify parolalarınızı ve SSH anahtarlarınızı sakladığı için güvenlik açıklarını herkese açık Issue olarak yazmayın. GitHub'daki **Security → Report a vulnerability** bölümünden gizli olarak bildirin.
+
+## Lisans
+
+[MIT](LICENSE). Electron, xterm.js ve ssh2 ile geliştirildi.
